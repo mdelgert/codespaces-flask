@@ -1,0 +1,3 @@
+Helloworld—this is “AI-generated” text with hidden characters.
+The zero-width space is sneaky, and smart quotes “” are common.
+Non-breaking space and em-dash—add flair but cause issues.

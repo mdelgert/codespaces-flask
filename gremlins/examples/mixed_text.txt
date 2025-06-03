@@ -1,0 +1,3 @@
+Welcome to my website…with fancy formatting!
+Smart quotes “test” and ellipsis… are common.
+Hidden spaces and dashes—confuse parsers.

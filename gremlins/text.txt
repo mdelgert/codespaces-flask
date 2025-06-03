@@ -1,0 +1,944 @@
+Comprehensive Guide to Hidden Unicode Characters in AI-Generated Text
+Introduction
+The rise of large language models (LLMs) like ChatGPT, Claude, Gemini, and Grok has transformed content creation, enabling rapid generation of text for various purposes. However, these models often introduce hidden or invalid Unicode characters into their output, which can cause significant issues in text processing, formatting, and security. These characters, ranging from invisible zero-width spaces to non-standard punctuation like em dashes, are not deliberate watermarks but artifacts of the models’ training data and formal tone preferences. This article explores the nature of these characters, their impact, and how to address them, providing a comprehensive test file for developing cleanup scripts.
+The Problem with Hidden Characters
+Hidden Unicode characters are symbols that do not appear visually or are non-standard but can affect how text is processed or displayed. For example:
+
+Invisible Characters: Zero-width space (U+200B) or left-to-right mark (U+200E) are invisible but can disrupt parsing or rendering.
+Non-Standard Characters: Em dashes (U+2014) or smart quotes (U+201C, U+201D) may not be compatible with all systems, leading to formatting inconsistencies.
+Security Risks: Characters like directional marks (U+202A–U+202E) can be exploited in attacks, such as ASCII smuggling, to hide malicious content or bypass filters.
+
+AI models like ChatGPT and Grok, developed by OpenAI and xAI respectively, frequently insert these characters due to:
+
+Training Data Bias: Models are trained on datasets containing formal writing styles, which include characters like em dashes and smart quotes common in published works.
+Formal Tone Preference: LLMs often adopt a formal tone, favoring non-standard punctuation over simpler ASCII equivalents (e.g., em dash over hyphen).
+No Keyboard Constraints: Unlike human typists, AI models can use any Unicode character without limitation.
+Lack of Filtering: Training processes do not explicitly filter out these characters, as they are valid Unicode.
+
+These characters can lead to:
+
+Formatting Issues: Text may render incorrectly in applications expecting standard ASCII or UTF-8.
+Security Vulnerabilities: Invisible characters can be used to manipulate text in ways that evade detection.
+AI Detection: Non-standard characters can make text appear AI-generated, potentially harming credibility in professional or academic contexts.
+
+Importantly, removing these characters does not bypass AI detection tools like Originality.AI’s AI Detector, as the text’s style and structure remain indicative of AI authorship.
+Common Problematic Unicode Characters
+To address this issue, it’s critical to identify and handle problematic Unicode characters. The following table, sourced from Originality.AI’s blog, lists 87 common Unicode characters, both visible and invisible, that are frequently problematic in AI-generated text. Each entry includes the Unicode code point, visibility, description, example, replacement action, and input methods.
+Table of Common Unicode Characters
+
+
+
+#
+Unicode
+Visibility
+Description
+Example
+Replaced With
+ANSI US Keyboard
+HTML
+Windows Typing
+
+
+
+1
+U+0020
+Visible
+Regular Space
+word word
+keep
+Spacebar
+ 
+Alt+32
+
+
+2
+U+00A0
+Visible
+No-Break Space
+word word
+→ space
+
+ 
+Alt+0160
+
+
+3
+U+0009
+Visible
+Tab
+word → word
+→ 4 spaces
+Tab
+	
+Alt+9
+
+
+4
+U+000A
+Visible
+Line Feed (LF)
+line1\nline2
+keep in double
+Enter
+
+
+Alt+10
+
+
+5
+U+000C
+Visible
+Form Feed
+
+
+
+
+Alt+12
+
+
+6
+U+001C
+Visible
+File Separator
+
+remove
+
+
+Alt+28
+
+
+7
+U+000D
+Visible
+Carriage Return (CR)
+
+remove
+Enter
+
+
+
+
+8
+U+2000
+Visible
+En Quad
+
+→ space
+
+ 
+Alt+2000
+
+
+9
+U+2001
+Visible
+Em Quad
+
+→ space
+
+ 
+Alt+2001
+
+
+10
+U+2002
+Visible
+En Space
+
+→ space
+
+ 
+Alt+2002
+
+
+11
+U+2003
+Visible
+Em Space
+
+→ space
+
+ 
+Alt+2003
+
+
+12
+U+2004
+Visible
+Three-Per-Em Space
+
+→ space
+
+ 
+Alt+2004
+
+
+13
+U+2005
+Visible
+Four-Per-Em Space
+
+→ space
+
+ 
+Alt+2005
+
+
+14
+U+2006
+Visible
+Six-Per-Em Space
+
+→ space
+
+ 
+Alt+2006
+
+
+15
+U+2007
+Visible
+Figure Space
+
+→ space
+
+ 
+Alt+2007
+
+
+16
+U+2008
+Visible
+Punctuation Space
+
+→ space
+
+ 
+Alt+2008
+
+
+17
+U+2009
+Visible
+Thin Space
+
+→ space
+
+ 
+Alt+2009
+
+
+18
+U+200A
+Visible
+Hair Space
+
+→ space
+
+ 
+Alt+200A
+
+
+19
+U+202F
+Visible
+Narrow NBSP
+
+→ space
+
+ 
+Alt+202F
+
+
+20
+U+205F
+Visible
+Math Space
+
+→ space
+
+ 
+Alt+205F
+
+
+21
+U+3000
+Visible
+Ideographic Space
+
+→ space
+
+　
+Alt+3000
+
+
+22
+U+1680
+Visible
+Ogham Space Mark
+
+→ space
+
+ 
+
+
+
+23
+U+200B
+Invisible
+Zero-Width Space
+
+→ space
+
+​
+Alt+200B
+
+
+24
+U+200C
+Invisible
+Zero-Width Non-Joiner
+
+remove
+
+‌
+Alt+200C
+
+
+25
+U+200D
+Invisible
+Zero-Width Joiner
+
+remove
+
+‍
+Alt+200D
+
+
+26
+U+200E
+Invisible
+Left-To-Right Mark
+
+remove
+
+‎
+Alt+200E
+
+
+27
+U+200F
+Invisible
+Right-To-Left Mark
+
+remove
+
+‏
+Alt+200F
+
+
+28
+U+202A
+Invisible
+LTR Embedding
+
+remove
+
+‪
+Alt+202A
+
+
+29
+U+202B
+Invisible
+RTL Embedding
+
+remove
+
+‫
+Alt+202B
+
+
+30
+U+202C
+Invisible
+Pop Directional Fmt
+
+remove
+
+‬
+Alt+202C
+
+
+31
+U+202D
+Invisible
+LTR Override
+
+remove
+
+‭
+Alt+202D
+
+
+32
+U+202E
+Invisible
+RTL Override
+
+remove
+
+‮
+Alt+202E
+
+
+33
+U+2060
+Invisible
+Word Joiner
+
+remove
+
+⁠
+Alt+2060
+
+
+34
+U+2061
+Invisible
+Function Application
+
+remove
+
+⁡
+Alt+2061
+
+
+35
+U+2062
+Invisible
+Invisible Times
+
+→ "x"
+
+⁢
+Alt+2062
+
+
+36
+U+2063
+Invisible
+Invisible Separator
+
+→ ","
+
+⁣
+Alt+2063
+
+
+37
+U+2064
+Invisible
+Invisible Plus
+
+→ "+"
+
+⁤
+Alt+2064
+
+
+38
+U+2066
+Invisible
+LTR Isolate
+
+remove
+
+⁦
+Alt+2066
+
+
+39
+U+2067
+Invisible
+RTL Isolate
+
+remove
+
+⁧
+Alt+2067
+
+
+40
+U+2068
+Invisible
+First Strong Isolate
+
+remove
+
+⁨
+Alt+2068
+
+
+41
+U+2069
+Invisible
+Pop Directional Isolate
+
+remove
+
+⁩
+Alt+2069
+
+
+42
+U+206A
+Invisible
+Inhibit Symmetric Swap
+
+remove
+
+⁪
+Alt+206A
+
+
+43
+U+206B
+Invisible
+Activate Symmetric Swap
+
+remove
+
+⁫
+Alt+206B
+
+
+44
+U+206C
+Invisible
+Inhibit Arabic Form Shaping
+
+remove
+
+⁬
+Alt+206C
+
+
+45
+U+206D
+Invisible
+Activate Arabic Form Shaping
+
+remove
+
+⁭
+Alt+206D
+
+
+46
+U+206E
+Invisible
+National Digit Shapes
+
+remove
+
+⁮
+Alt+206E
+
+
+47
+U+206F
+Invisible
+Nominal Digit Shapes
+
+remove
+
+⁯
+Alt+206F
+
+
+48
+U+2028
+Invisible
+Line Separator
+
+→ \n
+
+ 
+Alt+2028
+
+
+49
+U+2029
+Invisible
+Paragraph Separator
+
+→ \n\n
+
+ 
+Alt+2029
+
+
+50
+U+2014
+Visible
+Em Dash
+word—word
+keep
+—
+—
+
+
+
+51
+U+2013
+Visible
+En Dash
+pages 1–10
+keep
+–
+–
+
+
+
+52
+U+2019
+Visible
+Right Single Quote
+don't
+→ '
+’
+’
+
+
+
+53
+U+201C
+Visible
+Left Double Quote
+"hello
+→ "
+“
+“
+
+
+
+54
+U+201D
+Visible
+Right Double Quote
+hello"
+→ "
+”
+”
+
+
+
+55
+U+2018
+Visible
+Left Single Quote
+'hello
+→ '
+‘
+‘
+
+
+
+56
+U+2026
+Visible
+Horizontal Ellipsis
+wait...
+→ ...
+…
+…
+
+
+
+57
+U+00AD
+Invisible
+Soft Hyphen
+
+remove
+­
+­
+
+
+
+58
+U+034F
+Invisible
+Grapheme Joiner
+
+remove
+͏
+͏
+
+
+
+59
+U+2800
+Visible
+Braille Blank
+
+→ space
+⠀
+⠀
+Alt+2800
+
+
+60
+U+3164
+Visible
+Hangul Filler
+
+→ space
+ㅤ
+ㅤ
+Alt+3164
+
+
+61
+U+115F
+Visible
+Hangul Choseong Filler
+
+remove
+ᅟ
+ᅟ
+Alt+115F
+
+
+62
+U+1160
+Visible
+Hangul Jungseong Filler
+
+remove
+ᅠ
+ᅠ
+Alt+1160
+
+
+63
+U+17B4
+Visible
+Khmer Vowel Inherent AQ
+
+remove
+឴
+឴
+Alt+17B4
+
+
+64
+U+17B5
+Visible
+Khmer Vowel Inherent AA
+
+remove
+឵
+឵
+Alt+17B5
+
+
+65
+U+180B
+Invisible
+Mongolian VS-1
+
+remove
+᠋
+᠋
+Alt+180B
+
+
+66
+U+180C
+Invisible
+Mongolian VS-2
+
+remove
+᠌
+᠌
+Alt+180C
+
+
+67
+U+180D
+Invisible
+Mongolian VS-3
+
+remove
+᠍
+᠍
+Alt+180D
+
+
+68
+U+180E
+Visible
+Mongolian Vowel Sep.
+
+→ space
+᠎The following is a comprehensive test file that includes all 87 characters from the table, along with a mixed example to simulate real-world AI-generated text. This file can be used to develop and test cleanup scripts.
+
+
+
+
+Test File for Unicode Cleanup
+# Test File for Unicode Cleanup
+
+## Visible Characters
+1. U+0020 SPACE: [ ]
+2. U+00A0 NO-BREAK SPACE: [ ]
+3. U+0009 TAB: [	]
+4. U+000A LINE FEED: [line1
+line2]
+5. U+000C FORM FEED: []
+6. U+001C FILE SEPARATOR: []
+7. U+000D CARRIAGE RETURN: [
+]
+8. U+2000 EN QUAD: [ ]
+9. U+2001 EM QUAD: [ ]
+10. U+2002 EN SPACE: [ ]
+11. U+2003 EM SPACE: [ ]
+12. U+2004 THREE-PER-EM SPACE: [ ]
+13. U+2005 FOUR-PER-EM SPACE: [ ]
+14. U+2006 SIX-PER-EM SPACE: [ ]
+15. U+2007 FIGURE SPACE: [ ]
+16. U+2008 PUNCTUATION SPACE: [ ]
+17. U+2009 THIN SPACE: [ ]
+18. U+200A HAIR SPACE: [ ]
+19. U+202F NARROW NBSP: [ ]
+20. U+205F MATH SPACE: [ ]
+21. U+3000 IDEOGRAPHIC SPACE: [　]
+22. U+1680 OGHAM SPACE MARK: [ ]
+50. U+2014 EM DASH: [—]
+51. U+2013 EN DASH: [–]
+52. U+2019 RIGHT SINGLE QUOTE: [’]
+53. U+201C LEFT DOUBLE QUOTE: [“]
+54. U+201D RIGHT DOUBLE QUOTE: [”]
+55. U+2018 LEFT SINGLE QUOTE: [‘]
+56. U+2026 HORIZONTAL ELLIPSIS: […]
+59. U+2800 BRAILLE BLANK: [⠀]
+60. U+3164 HANGUL FILLER: [ㅤ]
+61. U+115F HANGUL CHOSEONG FILLER: [ᅟ]
+62. U+1160 HANGUL JUNGSEONG FILLER: [ᅠ]
+63. U+17B4 KHMER VOWEL INHERENT AQ: [឴]
+64. U+17B5 KHMER VOWEL INHERENT AA: [឵]
+68. U+180E MONGOLIAN VOWEL SEPARATOR: [᠎]
+86. U+FFA0 HALF-WIDTH HANGUL FILLER: [ﾠ]
+87. U+FFFC OBJECT REPLACEMENT: [￼]
+
+## Invisible Characters
+23. U+200B ZERO-WIDTH SPACE: []
+24. U+200C ZERO-WIDTH NON-JOINER: [‌]
+25. U+200D ZERO-WIDTH JOINER: [‍]
+26. U+200E LEFT-TO-RIGHT MARK: [‎]
+27. U+200F RIGHT-TO-LEFT MARK: [‏]
+28. U+202A LTR EMBEDDING: [‪]
+29. U+202B RTL EMBEDDING: [‫]
+30. U+202C POP DIRECTIONAL FMT: [‬]
+31. U+202D LTR OVERRIDE: [‭]
+32. U+202E RTL OVERRIDE: [‮]
+33. U+2060 WORD JOINER: [⁠]
+34. U+2061 FUNCTION APPLICATION: [⁡]
+35. U+2062 INVISIBLE TIMES: [⁢]
+36. U+2063 INVISIBLE SEPARATOR: [⁣]
+37. U+2064 INVISIBLE PLUS: [⁤]
+38. U+2066 LTR ISOLATE: [⁦]
+39. U+2067 RTL ISOLATE: [⁧]
+40. U+2068 FIRST STRONG ISOLATE: [⁨]
+41. U+2069 POP DIRECTIONAL ISOLATE: [⁩]
+42. U+206A INHIBIT SYMMETRIC SWAP: [⁪]
+43. U+206B ACTIVATE SYMMETRIC SWAP: [⁫]
+44. U+206C INHIBIT ARABIC FORM SHAPING: [⁬]
+45. U+206D ACTIVATE ARABIC FORM SHAPING: [⁭]
+46. U+206E NATIONAL DIGIT SHAPES: [⁮]
+47. U+206F NOMINAL DIGIT SHAPES: [⁯]
+48. U+2028 LINE SEPARATOR: [ ]
+49. U+2029 PARAGRAPH SEPARATOR: [ ]
+57. U+00AD SOFT HYPHEN: [­]
+58. U+034F GRAPHEME JOINER: [͏]
+65. U+180B MONGOLIAN VS-1: [᠋]
+66. U+180C MONGOLIAN VS-2: [᠌]
+67. U+180D MONGOLIAN VS-3: [᠍]
+69. U+FE00 VARIATION SELECTOR-1: [︀]
+70. U+FE01 VARIATION SELECTOR-2: [︁]
+71. U+FE02 VARIATION SELECTOR-3: [︂]
+72. U+FE03 VARIATION SELECTOR-4: [︃]
+73. U+FE04 VARIATION SELECTOR-5: [︄]
+74. U+FE05 VARIATION SELECTOR-6: [︅]
+75. U+FE06 VARIATION SELECTOR-7: [︆]
+76. U+FE07 VARIATION SELECTOR-8: [︇]
+77. U+FE08 VARIATION SELECTOR-9: [︈]
+78. U+FE09 VARIATION SELECTOR-10: [︉]
+79. U+FE0A VARIATION SELECTOR-11: [︊]
+80. U+FE0B VARIATION SELECTOR-12: [︋]
+81. U+FE0C VARIATION SELECTOR-13: [︌]
+82. U+FE0D VARIATION SELECTOR-14: [︍]
+83. U+FE0E VARIATION SELECTOR-15: [︎]
+84. U+FE0F VARIATION SELECTOR-16: [️]
+85. U+FEFF ZERO-WIDTH NBSP / BOM: [﻿]
+
+## Mixed Example
+Hello[]world—this is a test with [ ]non-breaking space, [—]em dash, and [“]smart quotes[”].
+
+How to Create the Test File:
+
+Copy the content above into a new file in VS Code (Ctrl+N).
+Save as unicode_test.txt with UTF-8 encoding (select in VS Code’s status bar).
+If characters don’t paste correctly, use the “Insert Unicode” VS Code extension or the following Python script to generate the file:
+
+import sys
+
+def write_test_file():
+    content = """# Test File for Unicode Cleanup
+
+## Visible Characters
+1. U+0020 SPACE: [ ]
+2. U+00A0 NO-BREAK SPACE: [\u00A0]
+3. U+0009 TAB: [\t]
+4. U+000A LINE FEED: [line1\nline2]
+5. U+000C FORM FEED: [\u000C]
+6. U+001C FILE SEPARATOR: [\u001C]
+7. U+000D CARRIAGE RETURN: [\r]
+8. U+2000 EN QUAD: [\u2000]
+9. U+2001 EM QUAD: [\u2001]
+10. U+2002 EN SPACE: [\u2002]
+11. U+2003 EM SPACE: [\u2003]
+12. U+2004 THREE-PER-EM SPACE: [\u2004]
+13. U+2005 FOUR-PER-EM SPACE: [\u2005]
+14. U+2006 SIX-PER-EM SPACE: [\u2006]
+15. U+2007 FIGURE SPACE: [\u2007]
+16. U+2008 PUNCTUATION SPACE: [\u2008]
+17. U+2009 THIN SPACE: [\u2009]
+18. U+200A HAIR SPACE: [\u200A]
+19. U+202F NARROW NBSP: [\u202F]
+20. U+205F MATH SPACE: [\u205F]
+21. U+3000 IDEOGRAPHIC SPACE: [\u3000]
+22. U+1680 OGHAM SPACE MARK: [\u1680]
+50. U+2014 EM DASH: [\u2014]
+51. U+2013 EN DASH: [\u2013]
+52. U+2019 RIGHT SINGLE QUOTE: [\u2019]
+53. U+201C LEFT DOUBLE QUOTE: [\u201C]
+54. U+201D RIGHT DOUBLE QUOTE: [\u201D]
+55. U+2018 LEFT SINGLE QUOTE: [\u2018]
+56. U+2026 HORIZONTAL ELLIPSIS: [\u2026]
+59. U+2800 BRAILLE BLANK: [\u2800]
+60. U+3164 HANGUL FILLER: [\u3164]
+61. U+115F HANGUL CHOSEONG FILLER: [\u115F]
+62. U+1160 HANGUL JUNGSEONG FILLER: [\u1160]
+63. U+17B4 KHMER VOWEL INHERENT AQ: [\u17B4]
+64. U+17B5 KHMER VOWEL INHERENT AA: [\u17B5]
+68. U+180E MONGOLIAN VOWEL SEPARATOR: [\u180E]
+86. U+FFA0 HALF-WIDTH HANGUL FILLER: [\uFFA0]
+87. U+FFFC OBJECT REPLACEMENT: [\uFFFC]
+
+## Invisible Characters
+23. U+200B ZERO-WIDTH SPACE
+

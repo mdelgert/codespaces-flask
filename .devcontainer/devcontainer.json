@@ -3,6 +3,9 @@
   "hostRequirements": {
     "cpus": 4
   },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
   "waitFor": "onCreateCommand",
   "updateContentCommand": "pip install -r requirements.txt",
   "postCreateCommand": "",
@@ -23,7 +26,9 @@
     },
     "vscode": {
       "extensions": [
-        "ms-python.python"
+        "ms-python.python",
+        "ms-azuretools.vscode-containers",
+        "nhoizey.gremlins"
       ]
     }
   },

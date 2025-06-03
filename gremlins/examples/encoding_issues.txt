@@ -1,0 +1,3 @@
+﻿This file starts with a BOM.
+Left-to-right text⁩ followed by right-to-left text⁧.
+Control characters like soft hyphen­ can break parsers.
