@@ -4,8 +4,9 @@ import sys
 import argparse
 import logging
 from typing import List, Tuple
+import importlib.metadata
 
-# Configure logging for better debugging and user feedback
+# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ def define_replacement_patterns() -> List[Tuple[str, str]]:
         # Visible Characters
         (r'\u00A0', ' '),  # No-Break Space → space
         (r'\u0009', '    '),  # Tab → 4 spaces
-        (r'\u000A', '\n'),  # Line Feed → keep in double (handled by ftfy)
+        (r'\u000A', '\n'),  # Line Feed → keep in double
         (r'\u000C', ''),  # Form Feed → remove
         (r'\u001C', ''),  # File Separator → remove
         (r'\u000D', ''),  # Carriage Return → remove
@@ -109,7 +110,7 @@ def define_replacement_patterns() -> List[Tuple[str, str]]:
         # AI-Specific Artifacts
         (r'#{2,}', ''),  # Remove Markdown headers (##, ###, etc.)
         (r'\*\*+', ''),  # Remove excessive bold markers (**)
-        (r'\[INST\]', ''),  # Remove instruction tags from some AI outputs
+        (r'\[INST\]', ''),  # Remove instruction tags
         (r'\[SEP\]', ''),  # Remove separator tags
         (r'```+', ''),  # Remove code block markers
 
@@ -126,21 +127,42 @@ def clean_text(text: str) -> str:
     Clean the input text by normalizing with ftfy and applying Unicode and AI artifact replacements.
     """
     try:
-        # Step 1: Normalize text with ftfy (fixes encoding, smart quotes, etc.)
-        cleaned = ftfy.fix_text(
-            text,
-            normalization='NFC',
-            uncurve_quotes=True,
-            fix_latin_ligatures=True,
-            remove_terminal_escapes=True
-        )
+        # Check ftfy version
+        try:
+            ftfy_version = importlib.metadata.version("ftfy")
+            logger.info(f"Using ftfy version: {ftfy_version}")
+        except importlib.metadata.PackageNotFoundError:
+            logger.warning("ftfy version not found, assuming compatible version")
+            ftfy_version = "unknown"
 
-        # Step 2: Apply all replacement patterns
+        # Use minimal ftfy parameters to avoid compatibility issues
+        ftfy_params = {
+            'normalization': 'NFC',
+            'fix_latin_ligatures': True,
+            'remove_terminal_escapes': True,
+            'fix_entities': True,
+        }
+
+        # Normalize text with ftfy
+        cleaned = ftfy.fix_text(text, **ftfy_params)
+        logger.info("ftfy normalization completed")
+
+        # Explicitly handle smart quotes and dashes via regex (in case ftfy doesn't)
+        quote_patterns = [
+            (r'[\u2018\u2019]', "'"),  # Single quotes
+            (r'[\u201C\u201D]', '"'),  # Double quotes
+            (r'[\u2013]', '-'),  # En dash
+            (r'[\u2014]', '-'),  # Em dash
+        ]
+        for pattern, replacement in quote_patterns:
+            cleaned = re.sub(pattern, replacement, cleaned)
+
+        # Apply all replacement patterns
         patterns = define_replacement_patterns()
         for pattern, replacement in patterns:
             cleaned = re.sub(pattern, replacement, cleaned)
 
-        # Step 3: Remove trailing whitespace and normalize multiple spaces
+        # Remove trailing whitespace and normalize multiple spaces
         cleaned = re.sub(r'\s+', ' ', cleaned).strip()
 
         return cleaned
@@ -203,3 +225,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# python clean.py test.txt test_clean.txt
