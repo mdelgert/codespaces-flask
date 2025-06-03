@@ -1,19 +1,38 @@
 <head>
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-
+    <style>
+        body { background: #181a1b; color: #e8e6e3; }
+        textarea, input, button {
+            background: #23272e; color: #e8e6e3; border: 1px solid #444; border-radius: 4px;
+        }
+        textarea { width: 90%; min-height: 120px; margin-bottom: 1em; padding: 0.5em; }
+        .output { background: #23272e; color: #aaffaa; padding: 1em; border-radius: 4px; margin-top: 1em; white-space: pre-wrap; }
+        .form-container { max-width: 700px; margin: 2em auto; background: #222; padding: 2em; border-radius: 8px; box-shadow: 0 2px 8px #0008; }
+        button { padding: 0.5em 2em; font-size: 1.1em; cursor: pointer; }
+    </style>
+</head>
 <body>
     <div class="App">
+        <!-- 
         <header class="App-header">
             <img src="{{ url_for('static', filename='Octocat.png') }}" class="App-logo" alt="logo" />
-            <p>
-                GitHub Codespaces <span class="heart">♥️</span> Flask
-            </p>
-            <p class="small">
-                Edit <code>templates/index.html</code> and refresh to see your changes!
-            </p>
-        </header>
+            <p>Simple Dark Theme Text Cleaner</p>
+        </header> 
+        -->
+        <div class="form-container">
+            <form method="post">
+                <label for="input_text">Paste your text below:</label><br>
+                <textarea id="input_text" name="input_text" required>{{ input_text|default('') }}</textarea><br>
+                <button type="submit">Clean Text</button>
+            </form>
+            {% if cleaned is not none %}
+            <div class="output">
+                <strong>Cleaned Output:</strong><br>
+                {{ cleaned }}
+            </div>
+            {% endif %}
+        </div>
     </div>
 </body>
-
 </html>
