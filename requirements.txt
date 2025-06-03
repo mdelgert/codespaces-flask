@@ -1,3 +1,4 @@
-Flask==2.3.2
-# ftfy==6.3.1
-ftfy==6.1.1
+# Flask==2.3.2
+# ftfy==6.1.1
+Flask==3.1.1
+ftfy==6.3.1

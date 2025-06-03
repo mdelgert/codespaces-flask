@@ -20,7 +20,6 @@ def define_replacement_patterns() -> List[Tuple[str, str]]:
         # Visible Characters
         (r'\u00A0', ' '),  # No-Break Space → space
         (r'\u0009', '    '),  # Tab → 4 spaces
-        (r'\u000A', '\n'),  # Line Feed → keep in double
         (r'\u000C', ''),  # Form Feed → remove
         (r'\u001C', ''),  # File Separator → remove
         (r'\u000D', ''),  # Carriage Return → remove
@@ -39,8 +38,8 @@ def define_replacement_patterns() -> List[Tuple[str, str]]:
         (r'\u205F', ' '),  # Math Space → space
         (r'\u3000', ' '),  # Ideographic Space → space
         (r'\u1680', ' '),  # Ogham Space Mark → space
-        (r'\u2014', '\u2014'),  # Em Dash → keep
-        (r'\u2013', '\u2013'),  # En Dash → keep
+        (r'\u2014', '-'),  # Em Dash → hyphen
+        (r'\u2013', '-'),  # En Dash → hyphen
         (r'\u2019', "'"),  # Right Single Quote → '
         (r'\u201C', '"'),  # Left Double Quote → "
         (r'\u201D', '"'),  # Right Double Quote → "
@@ -118,6 +117,7 @@ def define_replacement_patterns() -> List[Tuple[str, str]]:
         # Add new Unicode characters or AI-specific patterns here
         # Example: (r'\uXXXX', ''),  # New Unicode character → replacement
         # Example: (r'some_pattern', ''),  # New AI artifact → remove
+        (r'###+', ''),  # Remove three or more # symbols
         # (r'your_pattern_here', 'your_replacement_here'),
     ]
     return patterns
@@ -135,7 +135,7 @@ def clean_text(text: str) -> str:
             logger.warning("ftfy version not found, assuming compatible version")
             ftfy_version = "unknown"
 
-        # Use minimal ftfy parameters to avoid compatibility issues
+        # Use minimal ftfy parameters
         ftfy_params = {
             'normalization': 'NFC',
             'fix_latin_ligatures': True,
@@ -147,23 +147,29 @@ def clean_text(text: str) -> str:
         cleaned = ftfy.fix_text(text, **ftfy_params)
         logger.info("ftfy normalization completed")
 
-        # Explicitly handle smart quotes and dashes via regex (in case ftfy doesn't)
-        quote_patterns = [
-            (r'[\u2018\u2019]', "'"),  # Single quotes
-            (r'[\u201C\u201D]', '"'),  # Double quotes
-            (r'[\u2013]', '-'),  # En dash
-            (r'[\u2014]', '-'),  # Em dash
-        ]
-        for pattern, replacement in quote_patterns:
-            cleaned = re.sub(pattern, replacement, cleaned)
-
         # Apply all replacement patterns
         patterns = define_replacement_patterns()
         for pattern, replacement in patterns:
             cleaned = re.sub(pattern, replacement, cleaned)
 
-        # Remove trailing whitespace and normalize multiple spaces
-        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+        # Normalize non-standard spaces to regular spaces, preserving newlines
+        # List of non-standard space characters (excluding U+0020)
+        non_standard_spaces = (
+            r'\u00A0|\u2000|\u2001|\u2002|\u2003|\u2004|\u2005|\u2006|'
+            r'\u2007|\u2008|\u2009|\u200A|\u202F|\u205F|\u3000|\u1680|'
+            r'\u180E|\uFFA0|\u200B|\u2800|\u3164'
+        )
+        cleaned = re.sub(non_standard_spaces, ' ', cleaned)
+
+        # Preserve newlines and normalize multiple spaces (but not newlines)
+        # Replace multiple spaces with a single space, excluding newlines
+        cleaned = re.sub(r'[ \t]+', ' ', cleaned)
+
+        # Normalize multiple newlines (3+ → 2)
+        cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+
+        # Remove trailing spaces from each line, preserving newlines
+        cleaned = '\n'.join(line.rstrip() for line in cleaned.split('\n'))
 
         return cleaned
     except Exception as e:
@@ -226,4 +232,5 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python clean.py test.txt test_clean.txt
+# Example Usage:
+# python clean.py test.txt test.txt.clean
